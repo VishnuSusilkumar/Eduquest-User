@@ -6,5 +6,18 @@ export interface IUserService {
   getUser(id: string): Promise<User | any>;
   userLogin(email: string, password: string): any;
   updateUserInfo(id: string, name: string): any;
-  updatePassword(oldPassword: string, newPassword: string, userId: string): any;
+  updatePassword(id: string, oldPassword: string, newPassword: string): any;
+  updateAvatar(
+    data: Buffer,
+    fieldName: string,
+    mimeType: string,
+    id: string
+  ): any;
+  getUsers(): any;
+  getInstructors(): any;
+  deleteUser(userId: string): Promise<Object>;
+  forgotPassword(email: string): any;
+  verifyResetCode(data: { token: string; resetCode: string }): any;
+  resetPassword(userId: string, newPassword: string): any;
+  updateUserRole(userId: string, newRole: string): any;
 }
