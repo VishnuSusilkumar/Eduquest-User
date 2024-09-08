@@ -17,6 +17,7 @@ export interface IUser extends Document {
   };
   role: UserRole;
   isVerified: boolean;
+  isBlocked: boolean;
   courses: Array<{ courseId: string }>;
   comparePassword: (password: string) => Promise<boolean>;
   SignAccessToken: () => string;
@@ -59,6 +60,10 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
     courses: [
       {
         courseId: String,
@@ -93,7 +98,7 @@ userSchema.pre<IUser>("save", async function (next) {
 
 userSchema.methods.SignAccessToken = function () {
   return jwt.sign(
-    { id: this._id, role: this.role },
+    { id: this._id, role: this.role, isBlocked: this.isBlocked },
     process.env.ACCESS_TOKEN || "",
     {
       expiresIn: "5m",
@@ -105,7 +110,7 @@ userSchema.methods.SignAccessToken = function () {
 
 userSchema.methods.SignRefreshToken = function () {
   return jwt.sign(
-    { id: this._id, role: this.role },
+    { id: this._id, role: this.role, isBlocked: this.isBlocked  },
     process.env.REFRESH_TOKEN || "",
     {
       expiresIn: "3d",

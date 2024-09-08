@@ -97,6 +97,28 @@ export default class MessageHandler {
         );
         break;
 
+      case "update-course-list":
+        response = await userController.updateCoureList.bind(userController)(
+          data
+        );
+        break;
+
+      case "verify-user":
+        response = await userController.verifyUser.bind(userController)(
+          data.id
+        );
+        break;
+
+      case "block-user":
+        response = await userController.blockUser.bind(userController)(data.id);
+        break;
+
+      case "un-block-user":
+        response = await userController.unBlockUser.bind(userController)(
+          data.id
+        );
+        break;
+
       default:
         response = "Request-key not found";
         break;

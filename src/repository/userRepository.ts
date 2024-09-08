@@ -82,7 +82,6 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-
   async updateResetToken(
     userId: string,
     resetToken: string,
@@ -123,6 +122,61 @@ export class UserRepository implements IUserRepository {
       const user = await UserModel.findByIdAndUpdate(
         userId,
         { role: newRole },
+        { new: true }
+      );
+      return user;
+    } catch (e: any) {
+      throw new Error("db error");
+    }
+  }
+
+  async updateCourseList(
+    userId: string,
+    courseId: string
+  ): Promise<IUser | null> {
+    try {
+      const user = await UserModel.findById(userId);
+      user?.courses.push({ courseId });
+      await user?.save();
+      return null;
+    } catch (e: any) {
+      throw new Error("db error");
+    }
+  }
+
+  async verifyUser(userId: string): Promise<IUser | null> {
+    try {
+      const user = await UserModel.findByIdAndUpdate(
+        userId,
+        { isVerified: true },
+        { new: true }
+      );
+      return user;
+    } catch (e: any) {
+      throw new Error("db error");
+    }
+  }
+
+  async blockUser(userId: string): Promise<IUser | null> {
+    try {
+      const user = await UserModel.findByIdAndUpdate(
+        userId,
+        { isBlocked: true },
+        { new: true }
+      );
+      console.log(user);
+
+      return user;
+    } catch (e: any) {
+      throw new Error("db error");
+    }
+  }
+
+  async unBlockUser(userId: string): Promise<IUser | null> {
+    try {
+      const user = await UserModel.findByIdAndUpdate(
+        userId,
+        { isBlocked: false },
         { new: true }
       );
       return user;

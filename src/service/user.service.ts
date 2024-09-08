@@ -24,7 +24,7 @@ export class UserService implements IUserService {
       const isEmailExist = await this.repository.findOne(userData.email);
       if (isEmailExist) {
         if (!userData.avatar) {
-          throw new Error("Email Already Exists");
+          return { success: false, message: "Email Already Exist!" };
         } else {
           const accessToken = isEmailExist.SignAccessToken();
           const refreshToken = isEmailExist.SignRefreshToken();
@@ -38,7 +38,7 @@ export class UserService implements IUserService {
         const user = await this.repository.register(userData);
         const accessToken = user?.SignAccessToken();
         const refreshToken = user?.SignRefreshToken();
-        return { accessToken, refreshToken, user };
+        return { success: true, accessToken, refreshToken, user };
       }
     } catch (err) {
       return null;
@@ -54,6 +54,9 @@ export class UserService implements IUserService {
       const isPassword = await user.comparePassword(password);
       if (!isPassword) {
         return { success: false, message: "Incorrect password" };
+      }
+      if (user.isBlocked) {
+        return { success: false, message: "User is Blocked" };
       }
       const accessToken = user.SignAccessToken();
       const refreshToken = user.SignRefreshToken();
@@ -71,13 +74,14 @@ export class UserService implements IUserService {
         activationCode: string;
       };
       if (newUser.activationCode !== activationCode) {
-        throw new Error("Invalid Code");
+        return { success: false, message: "Invalid Code!" };
       }
       const existingUser = await this.repository.findOne(newUser.user.email);
       if (existingUser) {
-        return null;
+        return { success: false, message: "Email Already Exist" };
       }
-      return this.repository.register(newUser.user);
+      await this.repository.register(newUser.user);
+      return { success: true, message: "Successfully registered", status: 201 };
     } catch (err) {
       return null;
     }
@@ -98,9 +102,8 @@ export class UserService implements IUserService {
       if (user) {
         const response = {
           status: 201,
-          msg: "User info and updated successfully",
+          message: "User info and updated successfully",
         };
-
         return response;
       }
     } catch (err) {
@@ -152,9 +155,8 @@ export class UserService implements IUserService {
     mimeType: string,
     id: string
   ) {
-    
     const bufferData = Buffer.from(data);
-  
+
     const randomImageName = (bytes = 32) =>
       crypto.randomBytes(bytes).toString("hex");
     const bucketName = process.env.S3_BUCKET_NAME || "";
@@ -175,14 +177,18 @@ export class UserService implements IUserService {
     const rslt = await s3.send(command);
     const url = `https://eduquest-elearning.s3.ap-south-1.amazonaws.com/${imageName}`;
     await this.repository.avatarUpdate(id, url);
-    return { success: true };
+    return {
+      status: 201,
+      success: true,
+      message: "Avatar Updated Successfully",
+    };
   }
 
   async forgotPassword(email: string) {
     try {
       const user = await this.repository.findOne(email);
       if (!user) {
-        throw new Error("user not found");
+        return { success: false, message: "User not found!" };
       }
       const resetTokenData = createResetToken(user);
 
@@ -217,7 +223,7 @@ export class UserService implements IUserService {
       };
 
       if (decode.resetCode !== resetCode) {
-        throw new Error("Invalid reset code");
+        return { success: false, message: "Invalid reset code" };
       }
 
       const user = await this.repository.findOne(decode.user.email);
@@ -232,7 +238,7 @@ export class UserService implements IUserService {
       return {
         success: true,
         userId: user._id,
-        message: "Reset token and code verified successfully",
+        message: "Reset code verified successfully",
       };
     } catch (e: any) {
       console.log(e);
@@ -266,6 +272,60 @@ export class UserService implements IUserService {
     } catch (err) {
       console.error("Error updating user role:", err);
       return { success: false, message: "Failed to update user role" };
+    }
+  }
+
+  async updateCourseList(userId: string, courseId: string) {
+    await this.repository.updateCourseList(userId, courseId);
+    return;
+  }
+
+  async verifyUser(userId: string) {
+    try {
+      const response = await this.repository.verifyUser(userId);
+      if (!response) {
+        return { success: false, message: "User not found" };
+      }
+      return {
+        success: true,
+        message: "Instructor Verified Successfully",
+        status: 201,
+      };
+    } catch (e: any) {
+      console.log(e);
+    }
+  }
+
+  async blockUser(userId: string) {
+    try {
+      const response = await this.repository.blockUser(userId);
+      if (!response) {
+        return { success: false, message: "User not found" };
+      }
+      return {
+        success: true,
+        message: "User Blocked Successfully",
+        status: 200,
+        userId,
+      };
+    } catch (e: any) {
+      console.log(e);
+    }
+  }
+
+  async unBlockUser(userId: string) {
+    try {
+      const response = await this.repository.unBlockUser(userId);
+      if (!response) {
+        return { success: false, message: "User not found" };
+      }
+      return {
+        success: true,
+        message: "User unBlocked Successfully",
+        status: 200,
+      };
+    } catch (e: any) {
+      console.log(e);
     }
   }
 }

@@ -22,10 +22,13 @@ export class UserController {
         avatar: "",
         role: UserRole.User,
         isVerified: false,
+        isBlocked: false,
       };
       const response = await this.service.userRegister(userData);
-      if (!response) {
-        throw new Error("Email Exist");
+      console.log(response);
+
+      if (!response.success) {
+        return response;
       } else {
         const activationData = {
           code: response.activationCode,
@@ -34,30 +37,26 @@ export class UserController {
         };
         publisher.ActivationCode(activationData);
         return {
-          msg: "Activation code send to the Email",
+          message: "Activation code send to the Email",
           data: response,
           status: 201,
+          success: true,
         };
       }
     } catch (e: any) {
       console.log(e);
     }
   };
+
   activateUser = async (data: { token: string; activationCode: string }) => {
     try {
       const response = await this.service.activateUser(data);
-      if (!response) {
-        return {
-          msg: "Email Already Exist",
-          status: 409,
-        };
-      } else {
-        return { msg: "Successfully registered", status: 201 };
-      }
+      return response;
     } catch (e: any) {
       console.log(e);
     }
   };
+
   loginUser = async (email: string, password: string) => {
     try {
       const response = await this.service.userLogin(email, password);
@@ -68,6 +67,7 @@ export class UserController {
   };
   getUser = async (id: string) => {
     try {
+      console.log("Entered into the controller", id);
       const response = await this.service.getUser(id);
       if (response) {
         return response;
@@ -88,6 +88,7 @@ export class UserController {
         avatar: data.avatar,
         role: UserRole.User,
         isVerified: false,
+        isBlocked: false,
       };
       const response = await this.service.userRegister(userData);
       if (response) {
@@ -104,8 +105,6 @@ export class UserController {
         data.name
       );
       if (response) {
-        console.log("response returned");
-
         return response;
       }
     } catch (e: any) {
@@ -167,7 +166,6 @@ export class UserController {
     id: string
   ) => {
     try {
-      
       const response = await this.service.updateAvatar(
         data,
         fieldName,
@@ -183,6 +181,9 @@ export class UserController {
   forgotPassword = async (data: { email: string }) => {
     try {
       const response = await this.service.forgotPassword(data.email);
+      if (!response.success) {
+        return response;
+      }
       const resetData = {
         name: response.name,
         email: data.email,
@@ -194,9 +195,10 @@ export class UserController {
       publisher.ResetCode(resetData);
 
       return {
-        msg: "Reset code send to the Email",
+        message: "Reset code send to the Email",
         data: response,
         status: 201,
+        success: true,
       };
     } catch (e: any) {
       console.log(e);
@@ -206,16 +208,7 @@ export class UserController {
   verifyResetCode = async (data: { token: string; resetCode: string }) => {
     try {
       const response = await this.service.verifyResetCode(data);
-      if (!response.success) {
-        return {
-          msg: response.message,
-          status: 400,
-        };
-      }
-      return {
-        msg: "Reset code verified successfully.",
-        status: 200,
-      };
+      return response;
     } catch (e: any) {
       console.log(e);
     }
@@ -246,28 +239,65 @@ export class UserController {
     try {
       const validRoles = Object.values(UserRole) as string[];
       if (!validRoles.includes(data.newRole)) {
-        return { msg: "Invalid role provided", status: 400 };
+        return { message: "Invalid role provided", status: 400 };
       }
-
       const role = data.newRole as UserRole;
-
       const response = await this.service.updateUserRole(data.userId, role);
-
+      console.log(response);
       if (!response.success) {
-        return { msg: response.message, status: 400 };
+        return { message: response.message, status: 400 };
       }
-
-      return {
-        msg: "User role updated successfully",
-        data: response.user,
-        status: 200,
-      };
+      return response;
     } catch (e: any) {
       console.log(e);
       return {
-        msg: "Internal server error",
+        message: "Internal server error",
         status: 500,
       };
+    }
+  }
+
+  async updateCoureList(data: { userId: string; courseId: string }) {
+    try {
+      const response = await this.service.updateCourseList(
+        data.userId,
+        data.courseId
+      );
+      return {
+        message: "Updated course list",
+        data: response,
+        status: 200,
+        success: true,
+      };
+    } catch (e: any) {
+      console.log(e);
+    }
+  }
+
+  async verifyUser(id: string) {
+    try {
+      const response = await this.service.verifyUser(id);
+      return response;
+    } catch (e: any) {
+      console.log(e);
+    }
+  }
+
+  async blockUser(id: string) {
+    try {
+      const response = await this.service.blockUser(id);
+      return response;
+    } catch (e: any) {
+      console.log(e);
+    }
+  }
+
+  async unBlockUser(id: string) {
+    try {
+      const response = await this.service.unBlockUser(id);
+      return response;
+    } catch (e: any) {
+      console.log(e);
     }
   }
 }

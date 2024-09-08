@@ -20,4 +20,8 @@ export interface IUserService {
   verifyResetCode(data: { token: string; resetCode: string }): any;
   resetPassword(userId: string, newPassword: string): any;
   updateUserRole(userId: string, newRole: string): any;
+  updateCourseList(userId: string, courseId: string): any;
+  verifyUser(userId: string): any;
+  blockUser(userId: string): any;
+  unBlockUser(userId: string): any;
 }
