@@ -151,8 +151,8 @@ export class UserService implements IUserService {
 
   async updateAvatar(
     data: Buffer,
-    fieldName: string,
-    mimeType: string,
+    fieldname: string,
+    mimetype: string,
     id: string
   ) {
     const bufferData = Buffer.from(data);
@@ -169,7 +169,7 @@ export class UserService implements IUserService {
       Bucket: bucketName,
       Key: imageName,
       Body: buffer,
-      ContentType: mimeType,
+      ContentType: mimetype,
     };
 
     const command = new PutObjectCommand(params);
@@ -326,6 +326,46 @@ export class UserService implements IUserService {
       };
     } catch (e: any) {
       console.log(e);
+    }
+  }
+
+  async getUserAnalytics(
+    instructorId: string
+  ): Promise<[{ month: string; count: number }] | null> {
+    const months: { month: string; value: string }[] = [];
+    for (let i = 0; i < 12; i++) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      months.push({
+        month: date.toLocaleString("default", { month: "long" }),
+        value: date.toISOString().slice(0, 7),
+      });
+    }
+
+    const response = await this.repository.getUserAnalytics(instructorId);
+    const aggregatedData: Record<string, number> = {};
+    if (response) {
+      response.forEach(({ _id, count }: any) => {
+        aggregatedData[_id] = count;
+      });
+    } else {
+      return null;
+    }
+
+    const output: any = months.map(({ month, value }) => ({
+      month,
+      count: aggregatedData[value] || 0,
+    }));
+
+    return output;
+  }
+
+  async getUsersByRole(role: string): Promise<User[] | null> {
+    try {
+      return await this.repository.getUsersByRole(role);
+    } catch (err) {
+      console.error("Error retrieving users by role:", err);
+      return null;
     }
   }
 }

@@ -184,4 +184,43 @@ export class UserRepository implements IUserRepository {
       throw new Error("db error");
     }
   }
+
+  async getUserAnalytics(instructorId: string): Promise<Object[] | null> {
+    try {
+      const twelveMonthsAgo = new Date();
+      twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+
+      const matchStage: any = {
+        $match: {
+          createdAt: { $gte: twelveMonthsAgo },
+        },
+      };
+      if (instructorId !== "admin") {
+        matchStage.$match.instructorId = instructorId;
+      }
+
+      const response = await UserModel.aggregate([
+        matchStage,
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+            count: { $sum: 1 },
+          },
+        },
+      ]);
+
+      return response || [];
+    } catch (e: any) {
+      throw new Error("db error");
+    }
+  }
+
+  async getUsersByRole(role: string): Promise<IUser[] | null> {
+    try {
+      const users = await UserModel.find({ role });
+      return users;
+    } catch (e: any) {
+      throw new Error("db error");
+    }
+  }
 }

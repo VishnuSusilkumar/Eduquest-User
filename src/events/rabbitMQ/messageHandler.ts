@@ -68,7 +68,7 @@ export default class MessageHandler {
         response = await userController.updateAvatar.bind(userController)(
           data.data,
           data.fieldName,
-          data.mimeType,
+          data.mimetype,
           data.id
         );
         break;
@@ -116,6 +116,18 @@ export default class MessageHandler {
       case "un-block-user":
         response = await userController.unBlockUser.bind(userController)(
           data.id
+        );
+        break;
+
+      case "getUserAnalytics":
+        response = await userController.getUserAnalytics.bind(userController)(
+          data
+        );
+        break;
+
+      case "get-user-by-role":
+        response = await userController.getUsersByRole.bind(userController)(
+          data.role
         );
         break;
 

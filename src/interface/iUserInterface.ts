@@ -24,4 +24,6 @@ export interface IUserService {
   verifyUser(userId: string): any;
   blockUser(userId: string): any;
   unBlockUser(userId: string): any;
+  getUserAnalytics(instructorId: string): Promise<[{month: string, count:number}] | null>;
+  getUsersByRole(role: string): Promise<User[] | any>;
 }

@@ -23,4 +23,6 @@ export interface IUserRepository {
   verifyUser(userId: string): Promise<IUser | null>;
   blockUser(userId: string): Promise<IUser | null>;
   unBlockUser(userId: string): Promise<IUser | null>;
+  getUserAnalytics(instructorId: string): Promise<Object[] | null>;
+  getUsersByRole(role: string): Promise<IUser[] | any>;
 }

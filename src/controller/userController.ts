@@ -162,14 +162,14 @@ export class UserController {
   updateAvatar = async (
     data: Buffer,
     fieldName: string,
-    mimeType: string,
+    mimetype: string,
     id: string
   ) => {
     try {
       const response = await this.service.updateAvatar(
         data,
         fieldName,
-        mimeType,
+        mimetype,
         id
       );
       return response;
@@ -300,4 +300,39 @@ export class UserController {
       console.log(e);
     }
   }
+
+  async getUserAnalytics(instructorId: string) {
+    try {
+      const response = await this.service.getUserAnalytics(instructorId);
+      return response;
+    } catch (e: any) {
+      console.log(e);
+    }
+  }
+
+  getUsersByRole = async (role: string) => {
+    try {
+      const response = await this.service.getUsersByRole(role);
+      if (!response) {
+        return {
+          message: "No users found for this role",
+          status: 404,
+          success: false,
+        };
+      }
+      return {
+        message: "Users retrieved successfully",
+        data: response,
+        status: 200,
+        success: true,
+      };
+    } catch (e: any) {
+      console.log(e);
+      return {
+        message: "Internal server error",
+        status: 500,
+        success: false,
+      };
+    }
+  };
 }
