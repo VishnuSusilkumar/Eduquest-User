@@ -164,7 +164,7 @@ export class UserService implements IUserService {
       .resize({ height: 600, width: 600, fit: "cover" })
       .toBuffer();
 
-    const imageName = `Eduquest-profile/${randomImageName}`;
+    const imageName = `Eduquest-profile/${randomImageName()}`;
     const params: S3Params = {
       Bucket: bucketName,
       Key: imageName,
@@ -181,6 +181,7 @@ export class UserService implements IUserService {
       status: 201,
       success: true,
       message: "Avatar Updated Successfully",
+      avatar: url,
     };
   }
 
