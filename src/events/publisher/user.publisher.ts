@@ -3,7 +3,7 @@ import "dotenv/config";
 
 const publisher = async (queue: string, data: {}) => {
   try {
-    const url = process.env.RabbitMQ_link as string;
+    const url = process.env.RabbitMQ_Link as string;
     const connection = await amqp.connect(url);
     const channel = await connection.createChannel();
     await channel.assertQueue(queue);
